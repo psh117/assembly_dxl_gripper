@@ -3,7 +3,7 @@
 import dynamixel_sdk as dxl
 
 # dxl_id_map = {'hand_left_finger_left':4, 'hand_left_finger_right':3, 'hand_right_finger_left':2, 'hand_right_finger_right':1}
-dxl_id_map = {'hand_right_finger_right':1, 'hand_right_finger_left':2}
+dxl_id_map = {'panda_right_finger_right':1, 'panda_right_finger_left':2}
 
 # Control table address
 ADDR_OPERATING_MODE         = 11

@@ -6,11 +6,15 @@ import numpy as np
 import os
 import ctypes
 import dynamixel_sdk as dxl
+from sensor_msgs.msg import JointState
 from assembly_dxl_gripper import *
 from assembly_dxl_gripper.srv import *
+from threading import Lock
 
 if __name__ == '__main__':    
     rospy.init_node('gripper_server')
+
+    lock = Lock()
 
     portHandler = dxl.PortHandler(DEVICENAME)
     packetHandler = dxl.PacketHandler(PROTOCOL_VERSION)
@@ -18,7 +22,7 @@ if __name__ == '__main__':
     init_pos = {}
     for key in dxl_id_map:
         # rospy.get_param('/assembly_dxl_gripper/gripper_init', 1)
-        init_pos[key] = rospy.get_param('/assembly_dxl_gripper/' + key + '_init_pos')    
+        init_pos[key] = rospy.get_param('/assembly_dxl_gripper/' + key + '_init_pos')
     
     # Initialize GroupSyncWrite instance
     groupSyncWrite = dxl.GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)
@@ -61,7 +65,7 @@ if __name__ == '__main__':
         # desired_position = int(desired_length)
 
         groupSyncWrite.clearParam()
-
+        
         for key in dxl_id_map:
             desired_position = MAX_GRIPPER_POS - int(desired_length * M_TO_POS) + init_pos[key]
             print('desired_position', desired_position)
@@ -69,15 +73,40 @@ if __name__ == '__main__':
             dxl.DXL_LOBYTE(dxl.DXL_HIWORD(desired_position)), dxl.DXL_HIBYTE(dxl.DXL_HIWORD(desired_position))]
             groupSyncWrite.addParam(dxl_id_map[key], param_goal_position)
         
-        dxl_comm_result = groupSyncWrite.txPacket()
-        if dxl_comm_result != dxl.COMM_SUCCESS:
-            print("%s" % packet_handler.getTxRxResult(dxl_comm_result))
+        with lock:
+            dxl_comm_result = groupSyncWrite.txPacket()
+            if dxl_comm_result != dxl.COMM_SUCCESS:
+                print("%s" % packet_handler.getTxRxResult(dxl_comm_result))
 
         return MoveResponse()
 
     s = rospy.Service('/assembly_dxl_gripper/move', Move, move_gripper)
-    rospy.spin()
+    joint_pub = rospy.Publisher('/panda_dual/joint_states',JointState)
+    rate = rospy.Rate(30)
+    msg = JointState()
+    msg.name = dxl_id_map.keys()
+    pos = {}
+    vel = {}
+    while not rospy.is_shutdown():
+        with lock:
+            dxl_comm_result = groupSyncRead.txRxPacket()
+            if dxl_comm_result != dxl.COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        msg.position = []
+        msg.velocity = []
+        for key in dxl_id_map:
+            vel[key] = groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY)
+            pos[key] = int(np.int32(groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)))
 
+            dxl_comm_result = groupSyncWrite.txPacket()
+            if dxl_comm_result != dxl.COMM_SUCCESS:
+                print("%s" % packet_handler.getTxRxResult(dxl_comm_result))
+            msg.position.append(pos[key])
+            msg.velocity.append(vel[key])
+
+        joint_pub.publish(msg)
+        rate.sleep()
+        
     # set desried current
     for key in dxl_id_map:
         e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
