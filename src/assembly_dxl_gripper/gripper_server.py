@@ -55,7 +55,7 @@ if __name__ == '__main__':
         if req.length[0] > 0.08:
             print (req.length[0], 'over the limit')
             return MoveResponse()
-        if req.length[0] < 0.0:
+        if req.length[0] < -0.008:
             print (req.length[0], 'over the limit')
             return MoveResponse()
         # desired_position = int(desired_length)
