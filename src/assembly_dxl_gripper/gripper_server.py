@@ -76,13 +76,13 @@ if __name__ == '__main__':
         with lock:
             dxl_comm_result = groupSyncWrite.txPacket()
             if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packet_handler.getTxRxResult(dxl_comm_result))
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
 
         return MoveResponse()
 
     s = rospy.Service('/assembly_dxl_gripper/move', Move, move_gripper)
-    joint_pub = rospy.Publisher('/panda_dual/joint_states',JointState)
-    rate = rospy.Rate(30)
+    joint_pub = rospy.Publisher('/panda_dual/joint_states',JointState, queue_size=3)
+    rate = rospy.Rate(10)
     msg = JointState()
     msg.name = dxl_id_map.keys()
     pos = {}
@@ -96,11 +96,8 @@ if __name__ == '__main__':
         msg.velocity = []
         for key in dxl_id_map:
             vel[key] = groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY)
-            pos[key] = int(np.int32(groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)))
+            pos[key] = (MAX_GRIPPER_POS - int(np.int32(groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION))) + init_pos[key]) / M_TO_POS / 2
 
-            dxl_comm_result = groupSyncWrite.txPacket()
-            if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packet_handler.getTxRxResult(dxl_comm_result))
             msg.position.append(pos[key])
             msg.velocity.append(vel[key])
 
