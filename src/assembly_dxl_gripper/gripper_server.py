@@ -10,6 +10,7 @@ from sensor_msgs.msg import JointState
 from assembly_dxl_gripper import *
 from assembly_dxl_gripper.srv import *
 from threading import Lock
+import math
 
 if __name__ == '__main__':    
     rospy.init_node('gripper_server')
@@ -18,6 +19,8 @@ if __name__ == '__main__':
 
     portHandler = dxl.PortHandler(DEVICENAME)
     packetHandler = dxl.PacketHandler(PROTOCOL_VERSION)
+    pos = {}
+    vel = {}
 
     init_pos = {}
     for key in dxl_id_map:
@@ -78,15 +81,27 @@ if __name__ == '__main__':
             if dxl_comm_result != dxl.COMM_SUCCESS:
                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
 
+        rospy.sleep(0.5)
+        while True:
+            is_stopped = True
+            for key in dxl_id_map:
+                if abs(vel[key]) > 1:
+                    print('abs(vel[key])',abs(vel[key]))
+                    is_stopped = False
+            if is_stopped is True:
+                break
+            rospy.sleep(0.1)
+
+        print('done!')
+
         return MoveResponse()
 
     s = rospy.Service('/assembly_dxl_gripper/move', Move, move_gripper)
-    joint_pub = rospy.Publisher('/panda_dual/joint_states',JointState, queue_size=3)
-    rate = rospy.Rate(10)
+    joint_pub = rospy.Publisher('/panda_right_gripper/joint_states',JointState, queue_size=3)
+    rate = rospy.Rate(30)
     msg = JointState()
-    msg.name = dxl_id_map.keys()
-    pos = {}
-    vel = {}
+    for key in dxl_id_map:
+        msg.name.append(key + '_joint')
     while not rospy.is_shutdown():
         with lock:
             dxl_comm_result = groupSyncRead.txRxPacket()
@@ -100,7 +115,8 @@ if __name__ == '__main__':
 
             msg.position.append(pos[key])
             msg.velocity.append(vel[key])
-
+        msg.header.seq += 1
+        msg.header.stamp = rospy.Time.now()
         joint_pub.publish(msg)
         rate.sleep()
         
