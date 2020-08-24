@@ -2,11 +2,25 @@
 
 import dynamixel_sdk as dxl
 
-# dxl_id_map = {'hand_left_finger_left':4, 'hand_left_finger_right':3, 'hand_right_finger_left':2, 'hand_right_finger_right':1}
-dxl_id_map = {'panda_right_finger_right':1, 'panda_right_finger_left':2}
-hand_name_map = {'panda_right' : ['panda_right_finger_right','panda_right_finger_left'],
-                'panda_left' : ['panda_left_finger_right','panda_left_finger_left'],
-                'panda_top' : ['panda_top_finger_right','panda_top_finger_left']}
+dxl_id_map = {'panda_right_finger_right':1, 'panda_right_finger_left':2,
+              'panda_left_finger_right':3, 'panda_left_finger_left':4,
+              'panda_top_finger_right':5, 'panda_top_finger_left':6}
+
+hand_name_map = {'panda_right' : ['panda_right_finger_right','panda_right_finger_left']
+                # ,'panda_left' : ['panda_left_finger_right','panda_left_finger_left']
+                ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
+                }
+
+desired_length = {'panda_right' : 0
+                ,'panda_left' : 0
+                ,'panda_top' : 0
+                }
+
+desired_current = {'panda_right' : 0
+                ,'panda_left' : 0
+                ,'panda_top' : 0
+                }
+
 # Control table address
 ADDR_OPERATING_MODE         = 11
 ADDR_TORQUE_ENABLE      = 64               # Control table address is different in Dynamixel model
