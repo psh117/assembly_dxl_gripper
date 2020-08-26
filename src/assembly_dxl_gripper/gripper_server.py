@@ -77,7 +77,7 @@ if __name__ == '__main__':
         for i in range(len(req.hand)):
             arm = req.hand[i]
             desired_length[arm] = req.length[i]
-            desired_current[arm] = reg.max_current[i]
+            desired_current[arm] = req.max_current[i]
             print('controlling',arm)
             # Set mode to position control mode
             for key in hand_name_map[arm]:
