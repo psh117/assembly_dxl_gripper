@@ -8,7 +8,7 @@ dxl_id_map = {'panda_right_finger_right':1, 'panda_right_finger_left':2,
 
 hand_name_map = {'panda_right' : ['panda_right_finger_right','panda_right_finger_left']
                 # ,'panda_left' : ['panda_left_finger_right','panda_left_finger_left']
-                ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
+                # ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
                 }
 
 desired_length = {'panda_right' : 0

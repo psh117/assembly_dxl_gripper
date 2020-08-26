@@ -92,7 +92,7 @@ if __name__ == '__main__':
                 return MoveResponse()
 
             for key in hand_name_map[arm]:
-                desired_position = MAX_GRIPPER_POS - int(desired_length * M_TO_POS) + init_pos[key]
+                desired_position = MAX_GRIPPER_POS - int(desired_length[arm] * M_TO_POS) + init_pos[key]
                 print('desired_position', desired_position)
                 param_goal_position = [dxl.DXL_LOBYTE(dxl.DXL_LOWORD(desired_position)), dxl.DXL_HIBYTE(dxl.DXL_LOWORD(desired_position)), 
                 dxl.DXL_LOBYTE(dxl.DXL_HIWORD(desired_position)), dxl.DXL_HIBYTE(dxl.DXL_HIWORD(desired_position))]
