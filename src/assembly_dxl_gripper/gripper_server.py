@@ -72,6 +72,13 @@ if __name__ == '__main__':
             for key in hand_name_map[arm]:
                 e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
                 error_handle(e[0], e[1], packetHandler)
+
+        with lock:
+            dxl_comm_result = groupSyncWrite.txPacket()
+            if dxl_comm_result != dxl.COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        rospy.sleep(0.5)
+
         print ('position control started')
         groupSyncWrite.clearParam()
         for i in range(len(req.hand)):
@@ -102,8 +109,8 @@ if __name__ == '__main__':
             dxl_comm_result = groupSyncWrite.txPacket()
             if dxl_comm_result != dxl.COMM_SUCCESS:
                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-
         rospy.sleep(0.5)
+        
         while True:
             is_stopped = True
             for arm in req.hand:
@@ -126,6 +133,10 @@ if __name__ == '__main__':
                 if abs(desired_current[arm]) < 0.5: e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
                 else: e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, desired_current[arm])
                 error_handle(e[0], e[1], packetHandler)
+        with lock:
+            dxl_comm_result = groupSyncWrite.txPacket()
+            if dxl_comm_result != dxl.COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
         rospy.sleep(0.5)
 
         return MoveResponse()
