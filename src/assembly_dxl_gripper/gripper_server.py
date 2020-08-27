@@ -14,34 +14,17 @@ import math
 
 if __name__ == '__main__':  
 
-    def open_port(portHandler):
-        if portHandler.openPort():
-            print("Succeeded to open the port")
-        else:
-            print("Failed to open the port")
-
-        # Set port baudrate
-        if portHandler.setBaudRate(BAUDRATE):
-            print("Succeeded to change the baudrate")
-        else:
-            print("Failed to change the baudrate")
-
     rospy.init_node('gripper_server')
 
     lock = Lock()
 
     portHandler = dxl.PortHandler(DEVICENAME)
-    # portHandler_test = dxl.PortHandler(DEVICENAME)
     packetHandler = dxl.PacketHandler(PROTOCOL_VERSION)
-    # packetHandler_test = dxl.PacketHandler(PROTOCOL_VERSION)
     pos = {}
     vel = {}
     groupSyncWrite = dxl.GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)
     groupSyncRead = dxl.GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY+LEN_PRESENT_POSITION)
-    print('test1')
-    # groupSyncWrite_test = dxl.GroupSyncWrite(portHandler_test, packetHandler_test, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)
-    # groupSyncRead_test = dxl.GroupSyncRead(portHandler_test, packetHandler_test, ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY+LEN_PRESENT_POSITION)
-    print('test2')
+
     init_pos = {}
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
@@ -54,8 +37,14 @@ if __name__ == '__main__':
         for key in hand_name_map[arm]:
             groupSyncRead.addParam(dxl_id_map[key])
 
-    # Enable Dynamixel Torque & position control
-    open_port(portHandler)
+    if portHandler.openPort(): print("Succeeded to open the port")
+    else: print("Failed to open the port")
+
+    # Set port baudrate
+    if portHandler.setBaudRate(BAUDRATE): print("Succeeded to change the baudrate")
+    else: print("Failed to change the baudrate")
+
+    # Enable Dynamixel Torque & ext position control mode
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
@@ -63,14 +52,18 @@ if __name__ == '__main__':
             dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
 
-    # # Enable Dynamixel Torque & current control
-    # open_port(portHandler_test)
-    # for arm in hand_name_map:
-    #     for key in hand_name_map[arm]:
-    #         e = packetHandler_test.write1ByteTxRx(portHandler_test, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
-    #         error_handle(e[0], e[1], packetHandler_test)
-    #         dxl_comm_result, dxl_error = packetHandler_test.write1ByteTxRx(portHandler_test, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
-    #         error_handle(e[0], e[1], packetHandler_test)
+    # Reboot packetHandler to change mode
+    for arm in hand_name_map:
+        for key in hand_name_map[arm]:
+            packetHandler.reboot(portHandler,dxl_id_map[key])
+
+    # Enable Dynamixel Torque & current control mode
+    for arm in hand_name_map:
+        for key in hand_name_map[arm]:
+            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
+            error_handle(e[0], e[1], packetHandler)
+            dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+            error_handle(e[0], e[1], packetHandler)
 
 
     def move_gripper(req):
@@ -81,22 +74,15 @@ if __name__ == '__main__':
                 e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
                 error_handle(e[0], e[1], packetHandler)
 
-
         print ('position control started')
         groupSyncWrite.clearParam()
-        if len(req.hand) == 0 and len(req.length) > 0: req.hand.append('panda_right')
-        elif len(req.hand) == 1 :
-            if req.hand[0] == '':
-                req.hand[0] = 'panda_right'
-        for i in range(len(req.hand)):
-            arm = req.hand[i]
+        for i in range(len(req.length)):
+            if req.hand[i] == '': arm = 'panda_right'
+            else: arm = req.hand[i]
             desired_length[arm] = req.length[i]
             desired_current[arm] = req.max_current[i]
             print('controlling',arm)
-            # # Set mode to position control mode
-            # for key in hand_name_map[arm]:
 
-            
             if desired_length[arm] > 0.08:
                 print (arm, desired_length[arm], 'over the limit')
                 return MoveResponse()
@@ -128,20 +114,17 @@ if __name__ == '__main__':
                 break
             rospy.sleep(0.1)
 
-
-
         # print('current control started')
         # # set current to desried current
         # for arm in req.hand:
         #     # Set mode to current mode
         #     for key in hand_name_map[arm]:
-        #         e = packetHandler.write1ByteTxRx(portHandler_test, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
+        #         e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
         #         error_handle(e[0], e[1], packetHandler)
         #     for key in hand_name_map[arm]:
-        #         if abs(desired_current[arm]) < 0.5: e = packetHandler.write2ByteTxRx(portHandler_test, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
-        #         else: e = packetHandler.write2ByteTxRx(portHandler_test, dxl_id_map[key], ADDR_GOAL_CURRENT, desired_current[arm])
+        #         if abs(desired_current[arm]) < 0.5: e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
+        #         else: e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, desired_current[arm])
         #         error_handle(e[0], e[1], packetHandler)
-
 
         return MoveResponse()
 
