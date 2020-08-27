@@ -42,8 +42,12 @@ if __name__ == '__main__':
     # Enable Dynamixel Torque & ext position control mode
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
+            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
+            error_handle(e[0], e[1], packetHandler)
+            rospy.sleep(0.05)
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
             error_handle(e[0], e[1], packetHandler)
+            rospy.sleep(0.05)
             dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
             rospy.sleep(0.05)
