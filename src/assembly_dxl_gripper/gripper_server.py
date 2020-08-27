@@ -42,7 +42,8 @@ if __name__ == '__main__':
     # Enable Dynamixel Torque & ext position control mode
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
-            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
+            # e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
+            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_POSITION_CONTROL_MODE)
             error_handle(e[0], e[1], packetHandler)
             rospy.sleep(0.05)
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
@@ -52,16 +53,18 @@ if __name__ == '__main__':
     def move_gripper(req):
         print ("move gripper")
 
-        print ('position control started')
         groupSyncWrite.clearParam()
         for i in range(len(req.length)):
             try: arm = req.hand[i]
             except: arm = 'panda_right'
-            try: desired_current[arm] = req.max_current[i]
+            try:
+                if req.max_current[i] > 0.1:
+                    desired_current[arm] = req.max_current[i]
+                else: desired_current[arm] = 0.0
             except: desired_current[arm] = 0.0
             desired_length[arm] = req.length[i]
 
-            print('controlling',arm)
+            print('arm: ',arm,', length: ',desired_length[arm],', current: ',desired_current[arm],sep="")
             if desired_length[arm] > 0.08:
                 print (arm, desired_length[arm], 'over the limit')
                 return MoveResponse()
@@ -70,6 +73,8 @@ if __name__ == '__main__':
                 return MoveResponse()
 
             for key in hand_name_map[arm]:
+                e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, desired_current[arm])
+                error_handle(e[0], e[1], packetHandler)
                 desired_position = MAX_GRIPPER_POS - int(desired_length[arm] * M_TO_POS) + init_pos[key]
                 print('desired_position', desired_position)
                 param_goal_position = [dxl.DXL_LOBYTE(dxl.DXL_LOWORD(desired_position)), dxl.DXL_HIBYTE(dxl.DXL_LOWORD(desired_position)), 
