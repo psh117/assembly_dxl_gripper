@@ -53,24 +53,24 @@ if __name__ == '__main__':
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
             error_handle(e[0], e[1], packetHandler)
 
-    # set current to ZERO
-    for arm in hand_name_map:
-        for key in hand_name_map[arm]:
-            e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
-            error_handle(e[0], e[1], packetHandler)
-
     # Enable Dynamixel Torque
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
             dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
 
-    print("lock test 1")
-    with lock:
-        dxl_comm_result = groupSyncWrite.txPacket()
-        if dxl_comm_result != dxl.COMM_SUCCESS:
-            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-    rospy.sleep(0.5)
+    # set current to ZERO
+    for arm in hand_name_map:
+        for key in hand_name_map[arm]:
+            e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
+            error_handle(e[0], e[1], packetHandler)
+
+    # print("lock test 1")
+    # with lock:
+    #     dxl_comm_result = groupSyncWrite.txPacket()
+    #     if dxl_comm_result != dxl.COMM_SUCCESS:
+    #         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+    # rospy.sleep(0.5)
 
     def move_gripper(req):
         print ("move gripper")
@@ -80,12 +80,12 @@ if __name__ == '__main__':
                 e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
                 error_handle(e[0], e[1], packetHandler)
 
-        print("lock test 2")
-        with lock:
-            dxl_comm_result = groupSyncWrite.txPacket()
-            if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-        rospy.sleep(0.5)
+        # print("lock test 2")
+        # with lock:
+        #     dxl_comm_result = groupSyncWrite.txPacket()
+        #     if dxl_comm_result != dxl.COMM_SUCCESS:
+        #         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        # rospy.sleep(0.5)
 
         print ('position control started')
         groupSyncWrite.clearParam()
@@ -143,12 +143,12 @@ if __name__ == '__main__':
                 else: e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, desired_current[arm])
                 error_handle(e[0], e[1], packetHandler)
 
-        print("lock test 4")
-        with lock:
-            dxl_comm_result = groupSyncWrite.txPacket()
-            if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-        rospy.sleep(0.5)
+        # print("lock test 4")
+        # with lock:
+        #     dxl_comm_result = groupSyncWrite.txPacket()
+        #     if dxl_comm_result != dxl.COMM_SUCCESS:
+        #         print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        # rospy.sleep(0.5)
 
         return MoveResponse()
 
