@@ -112,8 +112,7 @@ if __name__ == '__main__':
         with lock:
             dxl_comm_result = groupSyncRead.txRxPacket()
             if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-        msg.position = []
+                print("%s" % packetHandler.getTxRxResulrospy.sleep(0.1)
         msg.velocity = []
         for arm in hand_name_map:
             for key in hand_name_map[arm]:
@@ -132,6 +131,7 @@ if __name__ == '__main__':
         for key in hand_name_map[arm]:
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_DISABLE)
             error_handle(e[0], e[1], packetHandler)
+            rospy.sleep(0.1)
 
     print('done')
 
