@@ -112,7 +112,8 @@ if __name__ == '__main__':
         with lock:
             dxl_comm_result = groupSyncRead.txRxPacket()
             if dxl_comm_result != dxl.COMM_SUCCESS:
-                print("%s" % packetHandler.getTxRxResulrospy.sleep(0.1)
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        msg.position = []
         msg.velocity = []
         for arm in hand_name_map:
             for key in hand_name_map[arm]:
