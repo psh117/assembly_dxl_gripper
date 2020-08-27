@@ -19,7 +19,7 @@ if __name__ == '__main__':
     lock = Lock()
 
     portHandler = dxl.PortHandler(DEVICENAME)
-    packetHandler = dxl.PacketHandler(PROTOCOL_VERSION)
+    
     pos = {}
     vel = {}
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         for key in hand_name_map[arm]:
             init_pos[key] = rospy.get_param('/assembly_dxl_gripper/' + key + '_init_pos')
     
-    # Initialize GroupSyncWrite instance
+    packetHandler = dxl.PacketHandler(PROTOCOL_VERSION)
     groupSyncWrite = dxl.GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)
     groupSyncRead = dxl.GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY+LEN_PRESENT_POSITION)
 
@@ -43,6 +43,7 @@ if __name__ == '__main__':
     # Set port baudrate
     if portHandler.setBaudRate(BAUDRATE): print("Succeeded to change the baudrate")
     else: print("Failed to change the baudrate")
+    rospy.sleep(0.1)
 
     # # Enable Dynamixel Torque & ext position control mode
     # for arm in hand_name_map:
@@ -64,6 +65,7 @@ if __name__ == '__main__':
             error_handle(e[0], e[1], packetHandler)
             dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
+            rospy.sleep(0.1)
 
 
     def move_gripper(req):
@@ -72,17 +74,26 @@ if __name__ == '__main__':
         # set current to ZERO
         for arm in hand_name_map:
             for key in hand_name_map[arm]:
+                print('current zero')
                 e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, 0)
                 error_handle(e[0], e[1], packetHandler)
+                rospy.sleep(0.1)
 
         # Reboot packetHandler to change mode
         for arm in hand_name_map:
             for key in hand_name_map[arm]:
+                print('reboot')
                 packetHandler.reboot(portHandler,dxl_id_map[key])
-
+        portHandler.clearPort()
+        rospy.sleep(0.1)
+        portHandler.closePort()
+        rospy.sleep(0.1)
+        portHandler.openPort()
+        rospy.sleep(0.1)
         # Enable Dynamixel Torque & ext position control mode
         for arm in hand_name_map:
             for key in hand_name_map[arm]:
+                print('change mode')
                 e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
                 error_handle(e[0], e[1], packetHandler)
                 dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
