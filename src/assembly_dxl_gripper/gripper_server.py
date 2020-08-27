@@ -84,6 +84,10 @@ if __name__ == '__main__':
 
         print ('position control started')
         groupSyncWrite.clearParam()
+        if len(req.hand) == 0 and len(req.length) > 0: req.hand.append('panda_right')
+        elif len(req.hand) == 1 :
+            if req.hand[0] == '':
+                req.hand[0] = 'panda_right'
         for i in range(len(req.hand)):
             arm = req.hand[i]
             desired_length[arm] = req.length[i]
