@@ -32,22 +32,20 @@ if __name__ == '__main__':
     else:
         print("Failed to change the baudrate")
 
-    # Set mode to current mode
+    # Enable Dynamixel Torque & current control mode
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, CURRENT_CONTROL_MODE)
             error_handle(e[0], e[1], packetHandler)
-
-    # Enable Dynamixel Torque
-    for arm in hand_name_map:
-        for key in hand_name_map[arm]:
-            dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+            rospy.sleep(0.05)
+            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
+            rospy.sleep(0.05)
 
     # set desried current
     for arm in hand_name_map:
         for key in hand_name_map[arm]:
-            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, INIT_CURRENT)
+            e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, INIT_CURRENT)
             error_handle(e[0], e[1], packetHandler)
 
     rospy.sleep(1.0)

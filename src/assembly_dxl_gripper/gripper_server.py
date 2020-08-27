@@ -45,7 +45,7 @@ if __name__ == '__main__':
             e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_OPERATING_MODE, EXT_POSITION_CONTROL_MODE)
             error_handle(e[0], e[1], packetHandler)
             rospy.sleep(0.05)
-            dxl_comm_result, dxl_error = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
+            e = packetHandler.write1ByteTxRx(portHandler, dxl_id_map[key], ADDR_TORQUE_ENABLE, TORQUE_ENABLE)
             error_handle(e[0], e[1], packetHandler)
             rospy.sleep(0.05)
 
@@ -57,9 +57,9 @@ if __name__ == '__main__':
         for i in range(len(req.length)):
             try: arm = req.hand[i]
             except: arm = 'panda_right'
-            desired_length[arm] = req.length[i]
             try: desired_current[arm] = req.max_current[i]
             except: desired_current[arm] = 0.0
+            desired_length[arm] = req.length[i]
 
             print('controlling',arm)
             if desired_length[arm] > 0.08:
@@ -81,7 +81,7 @@ if __name__ == '__main__':
             dxl_comm_result = groupSyncWrite.txPacket()
             if dxl_comm_result != dxl.COMM_SUCCESS:
                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-        rospy.sleep(0.5)
+        rospy.sleep(0.1)
         
         while True:
             is_stopped = True
