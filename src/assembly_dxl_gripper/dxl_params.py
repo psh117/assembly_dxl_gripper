@@ -11,9 +11,9 @@ hand_name_map = {'panda_right' : ['panda_right_finger_right','panda_right_finger
                 # ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
                 }
 
-desired_length = {'panda_right' : 0
-                ,'panda_left' : 0
-                ,'panda_top' : 0
+desired_length = {'panda_right' : 0.0
+                ,'panda_left' : 0.0
+                ,'panda_top' : 0.0
                 }
 
 desired_current = {'panda_right' : 0
