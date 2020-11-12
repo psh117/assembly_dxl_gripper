@@ -126,6 +126,8 @@ if __name__ == '__main__':
                     e = packetHandler.write2ByteTxRx(portHandler, dxl_id_map[key], ADDR_GOAL_CURRENT, int(desired_current[arm]))
                     error_handle(e[0], e[1], packetHandler)
 
+        rospy.sleep(0.7)
+        
         while True:
             is_stopped = True
             for arm in req.hand:
