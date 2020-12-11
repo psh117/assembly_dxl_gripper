@@ -150,18 +150,25 @@ if __name__ == '__main__':
             msg.name.append(key + '_joint')
     while not rospy.is_shutdown():
         with lock:
-            dxl_comm_result = groupSyncRead.txRxPacket()
+            try:
+                dxl_comm_result = groupSyncRead.txRxPacket()
+            except:
+                print ('an error is occured!')
+                continue
+            
             if dxl_comm_result != dxl.COMM_SUCCESS:
                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-        msg.position = []
-        msg.velocity = []
-        for arm in hand_name_map:
-            for key in hand_name_map[arm]:
-                vel[key] = groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY)
-                pos[key] = (MAX_GRIPPER_POS - int(np.int32(groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION))) + init_pos[key]) / M_TO_POS / 2
+                continue
+            
+            msg.position = []
+            msg.velocity = []
+            for arm in hand_name_map:
+                for key in hand_name_map[arm]:
+                    vel[key] = groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY)
+                    pos[key] = (MAX_GRIPPER_POS - int(np.int32(groupSyncRead.getData(dxl_id_map[key], ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION))) + init_pos[key]) / M_TO_POS / 2
 
-                msg.position.append(pos[key])
-                msg.velocity.append(vel[key])
+                    msg.position.append(pos[key])
+                    msg.velocity.append(vel[key])
         msg.header.seq += 1
         msg.header.stamp = rospy.Time.now()
         joint_pub.publish(msg)
