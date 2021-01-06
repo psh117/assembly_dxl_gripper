@@ -8,7 +8,7 @@ dxl_id_map = {'panda_right_finger_left':1, 'panda_right_finger_right':2,
 
 hand_name_map = {'panda_right' : ['panda_right_finger_right','panda_right_finger_left']
                 # ,'panda_left' : ['panda_left_finger_right','panda_left_finger_left']
-                 ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
+                ,'panda_top' : ['panda_top_finger_right','panda_top_finger_left']
                 }
 
 desired_length = {'panda_right' : 0.0
@@ -69,6 +69,8 @@ MAX_GRIPPER_POS = 13180
 # M_TO_POS = 188679.245283019
 # M_TO_POS = 171527.272727273
 M_TO_POS = 164750.0
+
+CURRENT_LIMIT = 110
 
 def error_handle(dxl_comm_result, dxl_error, packet_handler):
     if dxl_comm_result != dxl.COMM_SUCCESS:
